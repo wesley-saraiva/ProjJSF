@@ -15,14 +15,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.component.html.HtmlSelectOneMenu;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -36,17 +35,24 @@ import br.com.entidades.Estados;
 import br.com.entidades.Pessoa;
 import br.com.jpautil.JPAUtil;
 import br.com.repository.IDaoPessoa;
-import br.com.repository.IDaoPessoaImpl;
+import net.bootsfaces.component.selectOneMenu.SelectOneMenu;
 
-@ViewScoped
-@ManagedBean(name = "pessoaBean")
+@javax.faces.view.ViewScoped
+@Named(value = "pessoaBean")
 public class PessoaBean {
 
 	private Pessoa pessoa = new Pessoa();
-	private DaoGeneric<Pessoa> daoGeneric = new DaoGeneric<Pessoa>();
+
 	private List<Pessoa> pessoas = new ArrayList<Pessoa>();
 
-	private IDaoPessoa iDaoPessoa = new IDaoPessoaImpl();
+	@Inject
+	private DaoGeneric<Pessoa> daoGeneric;
+
+	@Inject
+	private IDaoPessoa iDaoPessoa;
+
+	@Inject
+	private JPAUtil jpaUtil;
 
 	private List<SelectItem> estados;
 
@@ -55,36 +61,39 @@ public class PessoaBean {
 	private Part arquivofoto;
 
 	public String salvar() throws IOException {
-		if(arquivofoto.getInputStream() != null) {
-		/* Processar imagem */
-		byte[] imagemByte = getByte(arquivofoto.getInputStream());
-		pessoa.setFotoBase64Original(imagemByte);// Salva imagem original
+		if (arquivofoto.getInputStream() != null) {
+			/* Processar imagem */
+			byte[] imagemByte = getByte(arquivofoto.getInputStream());
 
-		/* transfomrar em bufferimage */
-		BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imagemByte));
+			/* transfomrar em bufferimage */
+			BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imagemByte));
 
-		int type = bufferedImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : bufferedImage.getType();
+			if (bufferedImage != null) {
+				pessoa.setFotoBase64Original(imagemByte);// Salva imagem original
+				// pega o tipo da imagem
+				int type = bufferedImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : bufferedImage.getType();
 
-		int largura = 200;
-		int altura = 200;
+				int largura = 200;
+				int altura = 200;
 
-		/* Criar a miniatura */
-		BufferedImage resizedImage = new BufferedImage(altura, altura, type);
-		Graphics2D g = resizedImage.createGraphics();
-		g.drawImage(bufferedImage, 0, 0, largura, altura, null);
-		g.dispose();
+				/* Criar a miniatura */
+				BufferedImage resizedImage = new BufferedImage(altura, altura, type);
+				Graphics2D g = resizedImage.createGraphics();
+				g.drawImage(bufferedImage, 0, 0, largura, altura, null);
+				g.dispose();
 
-		/* Escrever novamente a imagem em tamanho menor */
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		String extensao = arquivofoto.getContentType().split("\\/")[1];// image png
-		ImageIO.write(resizedImage, extensao, baos);
+				/* Escrever novamente a imagem em tamanho menor */
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				String extensao = arquivofoto.getContentType().split("\\/")[1];// image png
+				ImageIO.write(resizedImage, extensao, baos);
 
-		String miniImagem = "data:" + arquivofoto.getContentType() + ";base64,"
-				+ DatatypeConverter.printBase64Binary(baos.toByteArray());
+				String miniImagem = "data:" + arquivofoto.getContentType() + ";base64,"
+						+ DatatypeConverter.printBase64Binary(baos.toByteArray());
 
-		/* Procesar imagem */
-		pessoa.setFotoIconBase64(miniImagem);
-		pessoa.setExtensao(extensao);
+				/* Procesar imagem */
+				pessoa.setFotoIconBase64(miniImagem);
+				pessoa.setExtensao(extensao);
+			}
 		}
 
 		pessoa = daoGeneric.merge(pessoa);
@@ -113,7 +122,7 @@ public class PessoaBean {
 
 	@PostConstruct
 	public void carregarPessoas() {
-		pessoas = daoGeneric.getListEntity(Pessoa.class);
+		pessoas = daoGeneric.getListEntityLimit10(Pessoa.class);
 	}
 
 	private void mostrarMsg(String msg) {
@@ -162,7 +171,7 @@ public class PessoaBean {
 			mostrarMsg("Erro ao consultar o CEP");
 		}
 	}
-	
+
 	public DaoGeneric<Pessoa> getDaoGeneric() {
 		return daoGeneric;
 	}
@@ -187,6 +196,8 @@ public class PessoaBean {
 			externalContext.getSessionMap().put("usuarioLogado", pessoaUser);
 
 			return "primeirapagina.jsf";
+		} else {
+			FacesContext.getCurrentInstance().addMessage("msg", new FacesMessage("Usuario não Encontrado"));
 		}
 
 		return "index.jsf";
@@ -222,12 +233,12 @@ public class PessoaBean {
 
 	public void carregaCidades(AjaxBehaviorEvent event) {
 
-		Estados estado = (Estados) ((HtmlSelectOneMenu) event.getSource()).getValue();
+		Estados estado = (Estados) ((SelectOneMenu) event.getSource()).getValue();
 
 		if (estado != null) {
 			pessoa.setEstados(estado);
 
-			List<Cidades> cidades = JPAUtil.getEntityManager()
+			List<Cidades> cidades = jpaUtil.getEntityManager()
 					.createQuery("from Cidades where estados.id = " + estado.getId()).getResultList();
 
 			List<SelectItem> selectItemsCidade = new ArrayList<SelectItem>();
@@ -246,7 +257,7 @@ public class PessoaBean {
 			Estados estado = pessoa.getCidades().getEstados();
 			pessoa.setEstados(estado);
 
-			List<Cidades> cidades = JPAUtil.getEntityManager()
+			List<Cidades> cidades = jpaUtil.getEntityManager()
 					.createQuery("from Cidades where estados.id = " + estado.getId()).getResultList();
 
 			List<SelectItem> selectItemsCidade = new ArrayList<SelectItem>();

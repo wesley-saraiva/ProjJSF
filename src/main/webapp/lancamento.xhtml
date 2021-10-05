@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:b="http://bootsfaces.net/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 
 <h:head>
@@ -10,74 +11,124 @@
 </h:head>
 
 <h:body>
-	<ui:include src="/menu.xhtml"/>
-	
+	<ui:include src="/menu.xhtml" />
 
-	<h:form id="formLancamento" style="margin-top:20%; margin-left:40%;">
+	<b:messages id="msg" />
+	<h:outputLabel value="Lancamentos" />
+	<b:form id="formLancamento">
 
-		<h:panelGrid columns="2">
+		<b:panelGrid columns="2">
 			<f:facet name="header">
-				<h:outputText value="Lancamentos" />
+
 			</f:facet>
+			<b:panel>
+				<b:column>
+					<h:outputLabel value="ID:" />
+					<b:inputText value="#{lancamentoBean.lancamento.id}"
+						readonly="true" />
+				</b:column>
 
-			<h:outputLabel value="ID:" />
-			<h:inputText value="#{lancamentoBean.lancamento.id}" />
+				<b:column>
+					<h:outputLabel value="Nota:" />
+					<b:inputText value="#{lancamentoBean.lancamento.numeroNotaFiscal}"
+						requiredMessage="Informe o numero da  nota fiscal" required="true" />
+				</b:column>
 
-			<h:outputLabel value="Nota:" />
-			<h:inputText value="#{lancamentoBean.lancamento.numeroNotaFiscal}" />
+				<b:column>
+					<h:outputLabel value="Data Inicial:" />
+					<b:datepicker locale="en" requiredMessage="Data Inicial"
+						required="true" value="#{lancamentoBean.lancamento.dataIni}" />
+				</b:column>
 
-			<h:outputLabel value="Origem:" />
-			<h:inputText value="#{lancamentoBean.lancamento.empresaOrigem}" />
+			</b:panel>
 
-			<h:outputLabel value="Destino:" />
-			<h:inputText value="#{lancamentoBean.lancamento.empresaDestino}" />
+			<b:panel>
+				<b:column>
+					<h:outputLabel value="Origem:" />
+					<b:inputText value="#{lancamentoBean.lancamento.empresaOrigem}"
+						requiredMessage="Informe a origem da nota fiscal" required="true" />
+				</b:column>
 
-			<h:outputLabel />
-			<h:panelGroup>
-				<h:commandButton value="Novo" action="#{lancamentoBean.novo}"
-					image="resources\img\new_add_user_16734.png" title="Novo" />
+				<b:column>
+					<h:outputLabel value="Destino:" />
+					<b:inputText value="#{lancamentoBean.lancamento.empresaDestino}"
+						requiredMessage="Informe o destino da  nota fiscal"
+						required="true" />
+				</b:column>
 
-				<h:commandButton style="margin-left:1cm;" value="Salvar"
-					action="#{lancamentoBean.salvar}" image="/resources/img/salvar.png"
-					title="Salvar" />
+				<b:column>
+					<h:outputLabel value="Data Final:" />
+					<b:datepicker locale="en" requiredMessage="Data Final"
+						required="true" value="#{lancamentoBean.lancamento.dataFin}" />
+				</b:column>
+			</b:panel>
+			<b:column>
+				<h:outputLabel />
+				<h:panelGroup>
+					<h:commandButton value="Novo" action="#{lancamentoBean.novo}"
+						image="resources\img\new_add_user_16734.png" title="Novo" />
 
-				<h:commandButton style="margin-left:1cm;" value="Remove"
-					action="#{lancamentoBean.remove}"
-					image="/resources/img/excluir.png" title="Remover" />
+					<h:commandButton style="margin-left:1cm;" value="Salvar"
+						action="#{lancamentoBean.salvar}"
+						image="/resources/img/salvar.png" title="Salvar" />
 
-				<h:commandButton style="margin-left:1cm;" value="Limpar"
-					type="reset" image="/resources/img/limpar.png" title="Limpar" />
-			</h:panelGroup>
-		</h:panelGrid>
+					<h:commandButton style="margin-left:1cm;" value="Remove"
+						action="#{lancamentoBean.remove}"
+						image="/resources/img/excluir.png" title="Remover" />
 
-
-		<h:dataTable value="#{lancamentoBean.lancamentos}" var="lanc"
+					<h:commandButton style="margin-left:1cm;" value="Limpar"
+						type="reset" image="/resources/img/limpar.png" title="Limpar" />
+				</h:panelGroup>
+			</b:column>
+		</b:panelGrid>
+	</b:form>
+	<br />
+	<br />
+	<b:form>
+		<b:dataTable value="#{lancamentoBean.lancamentos}" var="lanc"
 			border="3" cellpadding="6">
 
 			<f:facet name="header">
-	     	   Lista de lancamentos cadastrados
-	     	</f:facet>
+				<h4>Lista de lancamentos cadastrados</h4>
+			</f:facet>
 
+			<h:outputLabel value="ID " style="font-weight:bold;" />
 			<h:column>
 				<f:facet name="header">ID</f:facet>
 				<h:outputText value="#{lanc.id}" />
 			</h:column>
 
+			<h:outputLabel value="Nota " style="font-weight:bold;" />
 			<h:column>
 				<f:facet name="header">Nota</f:facet>
 				<h:outputText value="#{lanc.numeroNotaFiscal}" />
 			</h:column>
 
+			<h:outputLabel value="Origem " style="font-weight:bold;" />
 			<h:column>
 				<f:facet name="header">Origem</f:facet>
 				<h:outputText value="#{lanc.empresaOrigem}" />
 			</h:column>
 
+			<h:outputLabel value="Destino " style="font-weight:bold;" />
 			<h:column>
 				<f:facet name="header">Destino</f:facet>
 				<h:outputText value="#{lanc.empresaDestino}" />
 			</h:column>
 
+			<h:outputLabel value="Data Inicial " style="font-weight:bold;" />
+			<h:column>
+				<f:facet name="header">Data Ini</f:facet>
+				<h:outputText value="#{lanc.dataIni}" locale="en" />
+			</h:column>
+
+			<h:outputLabel value="Data Final " style="font-weight:bold;" />
+			<h:column>
+				<f:facet name="header">Data Fin</f:facet>
+				<h:outputText value="#{lanc.dataFin}" locale="en" />
+			</h:column>
+
+			<h:outputLabel value="Perfil " style="font-weight:bold;" />
 			<h:column>
 				<f:facet name="header">Usuario</f:facet>
 				<h:outputText value="#{lanc.usuario.perfilUser}" />
@@ -102,9 +153,12 @@
 				</h:commandLink>
 			</h:column>
 
-		</h:dataTable>
+		</b:dataTable>
 
-	</h:form>
+	</b:form>
+	<h:outputLabel />
+	<br />
+	<br />
 </h:body>
 
 </html>

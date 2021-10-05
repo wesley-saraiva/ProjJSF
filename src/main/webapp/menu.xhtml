@@ -3,16 +3,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:b="http://bootsfaces.net/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 
-	<h:form>
-		<h:commandLink value="Administração" action="primeirapagina"
-			style="margin-left:1cm;" />
-		<h:commandLink value="Lancamento" action="lancamento"
-			style="margin-left:1cm;" />
-		<h:commandLink value="Trocar Usuário" action="#{pessoaBean.deslogar}"
-			style="margin-left:1cm;" />
-	</h:form>
+<h:form>
+	<b:navBar brand="Menu" fluid="true">
+		<b:navbarLinks>
+			<b:navCommandLink action="primeirapagina" value="Administração" />
+			<b:navCommandLink action="lancamento" value="Lancamento" />
+
+			<b:dropMenu value="Relatorios">
+			<b:navCommandLink value="Rel.Notas" action="rellancamento"/>
+			<b:navCommandLink value="Rel.Usuario" action="relusuarios"/>
+			</b:dropMenu>
+			<b:navCommandLink action="#{pessoaBean.deslogar}"
+				value="Trocar Usuário" />
+		</b:navbarLinks>
+
+	</b:navBar>
+
+</h:form>
 
 </html>
 
